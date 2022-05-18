@@ -47,6 +47,9 @@ public class WebhookService {
         }else if(intent.equals("Коробки без продукта")){
             String productName = request.getQueryResult().getParameters().getProductname();
             return handleWithoutProduct(productName);
+        }else if(intent.equals("Коробки с продуктом")){
+            String productName = request.getQueryResult().getParameters().getProductname();
+            return handleWithProduct(productName);
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
@@ -106,6 +109,24 @@ public class WebhookService {
 
         List<Box> withoutProduct = allBoxes.stream().filter(box -> box.getProducts()
                         .stream().noneMatch(product -> product.getName().equals(productName)))
+                .collect(Collectors.toList());
+
+        StringBuilder summary = new StringBuilder("Можем предложить следующие коробки: \n");
+        for (Box box: withoutProduct) {
+            summary.append(" – ").append(box.getBoxName()).append("\n");
+        }
+        response.add(summary.toString());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
+    }
+
+    private Fulfillment handleWithProduct(String productName){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+
+        List<Box> withoutProduct = allBoxes.stream().filter(box -> box.getProducts()
+                        .stream().anyMatch(product -> product.getName().equals(productName)))
                 .collect(Collectors.toList());
 
         StringBuilder summary = new StringBuilder("Можем предложить следующие коробки: \n");
