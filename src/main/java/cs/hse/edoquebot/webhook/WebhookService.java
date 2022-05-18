@@ -20,8 +20,8 @@ public class WebhookService {
         String intent = request.getQueryResult().getIntent().getDisplayName();
         if (intent.equals("Test Server Intent")){
 
-            String boxType = request.getQueryResult().getParameters().getBoxType();
-            if(boxType != null){
+            String boxType = request.getQueryResult().getParameters().getBoxtype();
+            if(!boxType.equals("")){
                 return resolveBoxIntent(boxType);
             }else{
                 return "В нашем ассортименте есть:\n" +

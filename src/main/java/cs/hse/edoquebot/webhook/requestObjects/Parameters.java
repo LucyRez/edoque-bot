@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 public class Parameters {
 
-    private String boxType = null;
-    private String quantity = null;
+    private String boxtype;
+    private String quantity;
 
 }
