@@ -17,6 +17,7 @@ public class Parameters {
 
     private String boxtype;
     private String boxname;
+    private String productname;
     private String quantity;
 
 }

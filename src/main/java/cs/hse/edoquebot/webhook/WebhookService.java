@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -43,6 +44,9 @@ public class WebhookService {
         }else if(intent.equals("Расскажи про коробку")){
             String boxName = request.getQueryResult().getParameters().getBoxname();
             return handleAboutBox(boxName);
+        }else if(intent.equals("Коробки без продукта")){
+            String productName = request.getQueryResult().getParameters().getProductname();
+            return handleWithoutProduct(productName);
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
@@ -93,6 +97,24 @@ public class WebhookService {
             text.add(new Text(new Text2(response)));
             return new Fulfillment(text);
         }
+    }
+
+    private Fulfillment handleWithoutProduct(String productName){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+
+        List<Box> withoutProduct = allBoxes.stream().filter(box -> box.getProducts()
+                        .stream().noneMatch(product -> product.getName().equals(productName)))
+                .collect(Collectors.toList());
+
+        StringBuilder summary = new StringBuilder("Можем предложить следующие коробки: \n");
+        for (Box box: withoutProduct) {
+            summary.append(" – ").append(box.getBoxName()).append("\n");
+        }
+        response.add(summary.toString());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
     }
 
 
@@ -158,6 +180,9 @@ public class WebhookService {
 
 
 
+
+
+
     private void initProducts(){
         allProducts = List.of(
                 new Product("Клубника", 250, "г"),
@@ -187,7 +212,6 @@ public class WebhookService {
                 new Product("Медовое помело", 0, "г"),
                 new Product("Корица", 0, "г"),
                 new Product("Корень имбиря", 0, "г")
-
         );
 
     }
