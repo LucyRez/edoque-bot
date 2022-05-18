@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import cs.hse.edoquebot.webhook.boxes.Box;
 import cs.hse.edoquebot.webhook.boxes.Product;
+import cs.hse.edoquebot.webhook.cart.Cart;
 import cs.hse.edoquebot.webhook.requestObjects.Text;
 import cs.hse.edoquebot.webhook.requestObjects.Text2;
 import cs.hse.edoquebot.webhook.requestObjects.WebhookRequest;
@@ -27,9 +28,11 @@ public class WebhookService {
 
     List<Box> allBoxes;
     List<Product> allProducts;
+    List<Cart> allUsersCarts;
 
     public WebhookService() {
         initBoxes();
+        allUsersCarts = new ArrayList<>();
     }
 
     public Fulfillment getResponse(WebhookRequest request){
@@ -50,6 +53,13 @@ public class WebhookService {
         }else if(intent.equals("Коробки с продуктом")){
             String productName = request.getQueryResult().getParameters().getProductname();
             return handleWithProduct(productName);
+        }else if(intent.equals("Добавь в корзину")){
+            String boxName = request.getQueryResult().getParameters().getBoxname();
+            String userSession = request.getSession();
+            return handleAddBoxToCart(boxName, userSession);
+        }else if(intent.equals("Что в корзине")){
+            String userSession = request.getSession();
+            return handleCheckUserCart(userSession);
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
@@ -138,6 +148,48 @@ public class WebhookService {
         return new Fulfillment(text);
     }
 
+    private Fulfillment handleAddBoxToCart(String boxName, String userSession){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        Box addedBox = allBoxes.stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
+        if (addedBox == null){
+            response.add("Кажется такой коробки нет в ассортименте. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null){
+            userCart = new Cart(userSession);
+            allUsersCarts.add(userCart);
+        }
+
+        userCart.addToCart(addedBox);
+
+        response.add("Добавил в корзину");
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
+
+    }
+
+    private Fulfillment handleCheckUserCart(String userSession) {
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null){
+            userCart = new Cart(userSession);
+            allUsersCarts.add(userCart);
+        }
+
+        response.add(userCart.toString());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
+    }
 
     private Fulfillment resolveBoxesIntent(String boxType){
         List<Text> text = new ArrayList<>();
@@ -198,9 +250,6 @@ public class WebhookService {
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text);
     }
-
-
-
 
 
 
@@ -272,5 +321,7 @@ public class WebhookService {
         );
 
     }
+
+
 
 }
