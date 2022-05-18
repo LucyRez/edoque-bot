@@ -23,9 +23,9 @@ public class WebhookService {
     public Fulfillment getResponse(WebhookRequest request){
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-        
+
         String intent = request.getQueryResult().getIntent().getDisplayName();
-        if (intent.equals("Test Server Intent")){
+        if (intent.equals("Какие есть коробки")){
 
             String boxType = request.getQueryResult().getParameters().getBoxtype();
             if(!boxType.equals("")){
