@@ -1,21 +1,19 @@
+package cs.hse.edoquebot.webhook;
 
-package cs.hse.edoquebot.webhook.requestObjects;
-
-
-import java.util.List;
-import javax.annotation.Generated;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import cs.hse.edoquebot.webhook.requestObjects.Text;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@EqualsAndHashCode
-public class Text {
+import java.util.List;
 
-    private Text2 text = null;
+@AllArgsConstructor
+@Setter
+@Getter
+@EqualsAndHashCode
+public class Fulfillment {
+    private List<Text> fulfillmentMessages;
 }
