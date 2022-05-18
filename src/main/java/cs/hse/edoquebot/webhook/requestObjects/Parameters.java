@@ -16,6 +16,7 @@ import lombok.Setter;
 public class Parameters {
 
     private String boxtype;
+    private String boxname;
     private String quantity;
 
 }
