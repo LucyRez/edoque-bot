@@ -1,24 +1,15 @@
 package cs.hse.edoquebot.webhook;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import cs.hse.edoquebot.webhook.boxes.Box;
 import cs.hse.edoquebot.webhook.boxes.Product;
 import cs.hse.edoquebot.webhook.cart.Cart;
 import cs.hse.edoquebot.webhook.requestObjects.Text;
 import cs.hse.edoquebot.webhook.requestObjects.Text2;
 import cs.hse.edoquebot.webhook.requestObjects.WebhookRequest;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.json.Json;
-import java.io.StringReader;
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,8 +52,7 @@ public class WebhookService {
             String boxName = request.getQueryResult().getParameters().getBoxname();
             String userSession = request.getSession();
             return handleRemoveBoxFromCart(boxName, userSession);
-        }
-        else if (intent.equals("Что в корзине")) {
+        } else if (intent.equals("Что в корзине")) {
             String userSession = request.getSession();
             return handleCheckUserCart(userSession);
         } else if (intent.equals("Коробки до n рублей")) {
@@ -71,6 +61,14 @@ public class WebhookService {
         } else if (intent.equals("Коробки от n рублей")) {
             Integer price = request.getQueryResult().getParameters().getCardinal();
             return handleMoreExpensive(price);
+        }else if(intent.equals("Замени коробку")){
+            String from = request.getQueryResult().getParameters().getFrom();
+            String to = request.getQueryResult().getParameters().getTo();
+            String userSession = request.getSession();
+            return handleChangeBox(from, to, userSession);
+        }else if(intent.equals("Очисти корзину")){
+            String userSession = request.getSession();
+            return handleEraseCart(userSession);
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
@@ -99,7 +97,6 @@ public class WebhookService {
             return new Fulfillment(text);
         }
     }
-
 
     private Fulfillment handleAboutBox(String boxName) {
         List<Text> text = new ArrayList<>();
@@ -251,6 +248,12 @@ public class WebhookService {
         List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() < price)
                 .collect(Collectors.toList());
 
+        if(cheaper.size() == 0){
+            response.add("Не нашлось коробок дешевле "+  price + " ₽:\n");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
         StringBuilder summary = new StringBuilder("Коробки дешевле " + price + " ₽:\n");
         for (Box box : cheaper) {
             summary.append(" – ").append(box.getBoxName()).append("\n");
@@ -268,11 +271,76 @@ public class WebhookService {
         List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() > price)
                 .collect(Collectors.toList());
 
+        if(cheaper.size() == 0){
+            response.add("Не нашлось коробок дороже "+  price + " ₽:\n");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
         StringBuilder summary = new StringBuilder("Коробки дороже " + price + " ₽:\n");
         for (Box box : cheaper) {
             summary.append(" – ").append(box.getBoxName()).append("\n");
         }
         response.add(summary.toString());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
+    }
+
+    private Fulfillment handleChangeBox(String from, String to, String userSession){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("В вашей корзине сейчас пусто. Нечего заменять");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
+        Box changedBox = userCart.getBoxes().
+                stream().filter(box -> box.getBoxName().equals(from)).findFirst().orElse(null);
+        if (changedBox == null) {
+            response.add("Кажется такой коробки нет в вашей корзине. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
+        Box addedBox = allBoxes.stream().filter(box -> box.getBoxName().equals(to)).findFirst().orElse(null);
+        if (addedBox == null) {
+            response.add("Кажется, коробки на которую вы хотите заменить, нет в ассортименте. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
+        userCart.removeFromCart(changedBox);
+        userCart.addToCart(addedBox);
+
+        response.add("Заменил коробку. Вместо неё теперь: " + addedBox.getBoxName());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
+    }
+
+    private Fulfillment handleEraseCart(String userSession){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("Очистил корзину, хотя там и так ничего не было");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
+        allUsersCarts.remove(userCart);
+        allUsersCarts.add(new Cart(userSession));
+
+        response.add("В вашей корзине теперь чисто");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text);
     }
