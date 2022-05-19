@@ -167,6 +167,10 @@ public class WebhookService {
             allUsersCarts.add(userCart);
         }
 
+        if (quantity == null){
+            quantity = 1;
+        }
+        
         for (int i = 0; i < quantity; i++) {
             userCart.addToCart(addedBox);
         }
@@ -177,7 +181,7 @@ public class WebhookService {
         }else {
             response.add("Добавил " + quantity + " коробки в корзину");
         }
-        
+
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text);
 
