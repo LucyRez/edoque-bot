@@ -55,8 +55,9 @@ public class WebhookService {
             return handleWithProduct(productName);
         }else if(intent.equals("Добавь в корзину")){
             String boxName = request.getQueryResult().getParameters().getBoxname();
+            Integer quantity = request.getQueryResult().getParameters().getNumber();
             String userSession = request.getSession();
-            return handleAddBoxToCart(boxName, userSession);
+            return handleAddBoxToCart(boxName, quantity, userSession);
         }else if(intent.equals("Что в корзине")){
             String userSession = request.getSession();
             return handleCheckUserCart(userSession);
@@ -148,7 +149,7 @@ public class WebhookService {
         return new Fulfillment(text);
     }
 
-    private Fulfillment handleAddBoxToCart(String boxName, String userSession){
+    private Fulfillment handleAddBoxToCart(String boxName, Integer quantity, String userSession){
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
         Box addedBox = allBoxes.stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
@@ -166,9 +167,17 @@ public class WebhookService {
             allUsersCarts.add(userCart);
         }
 
-        userCart.addToCart(addedBox);
+        for (int i = 0; i < quantity; i++) {
+            userCart.addToCart(addedBox);
+        }
 
-        response.add("Добавил в корзину");
+        if(quantity == 1){
+            response.add("Добавил в корзину");
+
+        }else {
+            response.add("Добавил " + quantity + " коробки в корзину");
+        }
+        
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text);
 
@@ -250,8 +259,6 @@ public class WebhookService {
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text);
     }
-
-
 
     private void initProducts(){
         allProducts = List.of(
