@@ -57,7 +57,12 @@ public class WebhookService {
             Integer quantity = request.getQueryResult().getParameters().getNumber();
             String userSession = request.getSession();
             return handleAddBoxToCart(boxName, quantity, userSession);
-        } else if (intent.equals("Что в корзине")) {
+        } else if(intent.equals("Удали коробку")){
+            String boxName = request.getQueryResult().getParameters().getBoxname();
+            String userSession = request.getSession();
+            return handleRemoveBoxFromCart(boxName, userSession);
+        }
+        else if (intent.equals("Что в корзине")) {
             String userSession = request.getSession();
             return handleCheckUserCart(userSession);
         } else if (intent.equals("Коробки до n рублей")) {
@@ -94,6 +99,7 @@ public class WebhookService {
             return new Fulfillment(text);
         }
     }
+
 
     private Fulfillment handleAboutBox(String boxName) {
         List<Text> text = new ArrayList<>();
@@ -190,6 +196,34 @@ public class WebhookService {
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text);
 
+    }
+
+    private Fulfillment handleRemoveBoxFromCart(String boxName, String userSession){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("В вашей корзине сейчас пусто. Нечего убирать");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
+        Box removedBox = userCart.getBoxes().
+                stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
+        if (removedBox == null) {
+            response.add("Кажется такой коробки нет в вашей корзине. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text);
+        }
+
+        userCart.removeFromCart(removedBox);
+        response.add("Убрал из корзины");
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
     }
 
     private Fulfillment handleCheckUserCart(String userSession) {
