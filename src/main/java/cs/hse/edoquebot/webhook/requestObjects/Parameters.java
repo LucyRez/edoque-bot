@@ -19,5 +19,8 @@ public class Parameters {
     private String boxname;
     private String productname;
     private Integer number = 1;
+    private Integer cardinal;
+
+
 
 }

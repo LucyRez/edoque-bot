@@ -41,7 +41,6 @@ public class WebhookService {
 
         String intent = request.getQueryResult().getIntent().getDisplayName();
         if (intent.equals("Какие есть коробки")){
-
             String boxType = request.getQueryResult().getParameters().getBoxtype();
             return handleGetAllBoxes(boxType);
         }else if(intent.equals("Расскажи про коробку")){
@@ -61,6 +60,12 @@ public class WebhookService {
         }else if(intent.equals("Что в корзине")){
             String userSession = request.getSession();
             return handleCheckUserCart(userSession);
+        }else if(intent.equals("Коробки до n рублей")){
+            Integer price = request.getQueryResult().getParameters().getCardinal();
+            return handleBoxesCheaperThan(price);
+        }else if(intent.equals("Коробки от n рублей")){
+            Integer price = request.getQueryResult().getParameters().getCardinal();
+            return handleMoreExpensive(price);
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
@@ -170,7 +175,7 @@ public class WebhookService {
         if (quantity == null){
             quantity = 1;
         }
-        
+
         for (int i = 0; i < quantity; i++) {
             userCart.addToCart(addedBox);
         }
@@ -200,6 +205,40 @@ public class WebhookService {
         }
 
         response.add(userCart.toString());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
+    }
+
+    private Fulfillment handleBoxesCheaperThan(Integer price){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+
+        List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() < price)
+                .collect(Collectors.toList());
+
+        StringBuilder summary = new StringBuilder("Коробки дешевле " + price + " ₽:\n");
+        for (Box box: cheaper) {
+            summary.append(" – ").append(box.getBoxName()).append("\n");
+        }
+        response.add(summary.toString());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text);
+    }
+
+    private Fulfillment handleMoreExpensive(Integer price){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+
+
+        List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() > price)
+                .collect(Collectors.toList());
+
+        StringBuilder summary = new StringBuilder("Коробки дороже " + price + " ₽:\n");
+        for (Box box: cheaper) {
+            summary.append(" – ").append(box.getBoxName()).append("\n");
+        }
+        response.add(summary.toString());
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text);
     }
