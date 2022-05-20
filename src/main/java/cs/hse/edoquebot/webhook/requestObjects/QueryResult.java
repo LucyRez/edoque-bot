@@ -18,7 +18,7 @@ public class QueryResult {
     private Boolean allRequiredParamsPresent;
     private String fulfillmentText;
     private List<Object> fulfillmentMessages = null;
-    private List<Object> outputContexts = null;
+    private List<OutputContext> outputContexts = null;
     private Intent intent;
     private Integer intentDetectionConfidence;
     private DiagnosticInfo diagnosticInfo;
@@ -64,11 +64,11 @@ public class QueryResult {
         this.fulfillmentMessages = fulfillmentMessages;
     }
 
-    public List<Object> getOutputContexts() {
+    public List<OutputContext> getOutputContexts() {
         return outputContexts;
     }
 
-    public void setOutputContexts(List<Object> outputContexts) {
+    public void setOutputContexts(List<OutputContext> outputContexts) {
         this.outputContexts = outputContexts;
     }
 

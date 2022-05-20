@@ -3,9 +3,7 @@ package cs.hse.edoquebot.webhook;
 import cs.hse.edoquebot.webhook.boxes.Box;
 import cs.hse.edoquebot.webhook.boxes.Product;
 import cs.hse.edoquebot.webhook.cart.Cart;
-import cs.hse.edoquebot.webhook.requestObjects.Text;
-import cs.hse.edoquebot.webhook.requestObjects.Text2;
-import cs.hse.edoquebot.webhook.requestObjects.WebhookRequest;
+import cs.hse.edoquebot.webhook.requestObjects.*;
 import org.springframework.stereotype.Service;
 
 
@@ -31,54 +29,73 @@ public class WebhookService {
         List<String> response = new ArrayList<>();
 
         String intent = request.getQueryResult().getIntent().getDisplayName();
-        if (intent.equals("Какие есть коробки")) {
-            String boxType = request.getQueryResult().getParameters().getBoxtype();
-            return handleGetAllBoxes(boxType);
-        } else if (intent.equals("Расскажи про коробку")) {
-            String boxName = request.getQueryResult().getParameters().getBoxname();
-            return handleAboutBox(boxName);
-        } else if (intent.equals("Коробки без продукта")) {
-            String productName = request.getQueryResult().getParameters().getProductname();
-            return handleWithoutProduct(productName);
-        } else if (intent.equals("Коробки с продуктом")) {
-            String productName = request.getQueryResult().getParameters().getProductname();
-            return handleWithProduct(productName);
-        } else if (intent.equals("Добавь в корзину")) {
-            String boxName = request.getQueryResult().getParameters().getBoxname();
-            Integer quantity = request.getQueryResult().getParameters().getNumber();
-            String userSession = request.getSession();
-            return handleAddBoxToCart(boxName, quantity, userSession);
-        } else if(intent.equals("Удали коробку")){
-            String boxName = request.getQueryResult().getParameters().getBoxname();
-            String userSession = request.getSession();
-            return handleRemoveBoxFromCart(boxName, userSession);
-        } else if (intent.equals("Что в корзине")) {
-            String userSession = request.getSession();
-            return handleCheckUserCart(userSession);
-        } else if (intent.equals("Коробки до n рублей")) {
-            Integer price = request.getQueryResult().getParameters().getCardinal();
-            return handleBoxesCheaperThan(price);
-        } else if (intent.equals("Коробки от n рублей")) {
-            Integer price = request.getQueryResult().getParameters().getCardinal();
-            return handleMoreExpensive(price);
-        }else if(intent.equals("Замени коробку")){
-            String from = request.getQueryResult().getParameters().getFrom();
-            String to = request.getQueryResult().getParameters().getTo();
-            String userSession = request.getSession();
-            return handleChangeBox(from, to, userSession);
-        }else if(intent.equals("Очисти корзину")){
-            String userSession = request.getSession();
-            return handleEraseCart(userSession);
+        List<OutputContext> contexts = request.getQueryResult().getOutputContexts();
+
+        switch (intent) {
+            case "Какие есть коробки" -> {
+                String boxType = request.getQueryResult().getParameters().getBoxtype();
+                return handleGetAllBoxes(boxType);
+            }
+            case "Расскажи про коробку" -> {
+                String boxName = request.getQueryResult().getParameters().getBoxname();
+                return handleAboutBox(boxName);
+            }
+            case "Коробки без продукта" -> {
+                String productName = request.getQueryResult().getParameters().getProductname();
+                return handleWithoutProduct(productName);
+            }
+            case "Коробки с продуктом" -> {
+                String productName = request.getQueryResult().getParameters().getProductname();
+                return handleWithProduct(productName);
+            }
+            case "Добавь в корзину" -> {
+                String boxName = request.getQueryResult().getParameters().getBoxname();
+                Integer quantity = request.getQueryResult().getParameters().getNumber();
+                String userSession = request.getSession();
+                return handleAddBoxToCart(boxName, quantity, userSession);
+            }
+            case "Удали коробку" -> {
+                String boxName = request.getQueryResult().getParameters().getBoxname();
+                String userSession = request.getSession();
+                return handleRemoveBoxFromCart(boxName, userSession);
+            }
+            case "Что в корзине" -> {
+                String userSession = request.getSession();
+                return handleCheckUserCart(userSession);
+            }
+            case "Коробки до n рублей" -> {
+                Integer price = request.getQueryResult().getParameters().getCardinal();
+                return handleBoxesCheaperThan(price);
+            }
+            case "Коробки от n рублей" -> {
+                Integer price = request.getQueryResult().getParameters().getCardinal();
+                return handleMoreExpensive(price);
+            }
+            case "Замени коробку" -> {
+                String from = request.getQueryResult().getParameters().getFrom();
+                String to = request.getQueryResult().getParameters().getTo();
+                String userSession = request.getSession();
+                return handleChangeBox(from, to, userSession);
+            }
+            case "Очисти корзину" -> {
+                String userSession = request.getSession();
+                return handleEraseCart(userSession);
+            }
+            case "Оформи заказ" -> {
+                String userSession = request.getSession();
+                return handleMakeOrder(userSession, request.getQueryResult().getParameters());
+            }
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
-
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleGetAllBoxes(String boxType) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
         if (!boxType.equals("")) {
             return resolveBoxesIntent(boxType);
         } else {
@@ -94,13 +111,15 @@ public class WebhookService {
                     "  – Весенняя коробка, 1.8 кг (1600 ₽)\n" +
                     "  – Не болей, 2.7 кг (1850 ₽)");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
     }
 
     private Fulfillment handleAboutBox(String boxName) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
         if (!boxName.equals("")) {
             return resolveBoxIntent(boxName);
         } else {
@@ -117,14 +136,14 @@ public class WebhookService {
                     "  – Не болей, 2.7 кг (1850 ₽)\n" +
                     "Про какую коробку хотите узнать подробнее?");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
     }
 
     private Fulfillment handleWithoutProduct(String productName) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-
+        List<OutputContext> contexts = new ArrayList<>();
 
         List<Box> withoutProduct = allBoxes.stream().filter(box -> box.getProducts()
                         .stream().noneMatch(product -> product.getName().equals(productName)))
@@ -136,13 +155,13 @@ public class WebhookService {
         }
         response.add(summary.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleWithProduct(String productName) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-
+        List<OutputContext> contexts = new ArrayList<>();
 
         List<Box> withoutProduct = allBoxes.stream().filter(box -> box.getProducts()
                         .stream().anyMatch(product -> product.getName().equals(productName)))
@@ -154,17 +173,19 @@ public class WebhookService {
         }
         response.add(summary.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleAddBoxToCart(String boxName, Integer quantity, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
         Box addedBox = allBoxes.stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
         if (addedBox == null) {
             response.add("Кажется такой коробки нет в ассортименте. Можете сказать по другому?");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
@@ -191,14 +212,14 @@ public class WebhookService {
         }
 
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
 
     }
 
     private Fulfillment handleRemoveBoxFromCart(String boxName, String userSession){
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-
+        List<OutputContext> contexts = new ArrayList<>();
 
         Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
                 .findFirst().orElse(null);
@@ -206,7 +227,7 @@ public class WebhookService {
         if (userCart == null || userCart.getBoxes().size() == 0) {
             response.add("В вашей корзине сейчас пусто. Нечего убирать");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         Box removedBox = userCart.getBoxes().
@@ -214,18 +235,19 @@ public class WebhookService {
         if (removedBox == null) {
             response.add("Кажется такой коробки нет в вашей корзине. Можете сказать по другому?");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         userCart.removeFromCart(removedBox);
         response.add("Убрал из корзины");
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleCheckUserCart(String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
 
         Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
                 .findFirst().orElse(null);
@@ -237,13 +259,13 @@ public class WebhookService {
 
         response.add(userCart.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleBoxesCheaperThan(Integer price) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-
+        List<OutputContext> contexts = new ArrayList<>();
 
         List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() < price)
                 .collect(Collectors.toList());
@@ -251,7 +273,7 @@ public class WebhookService {
         if(cheaper.size() == 0){
             response.add("Не нашлось коробок дешевле "+  price + " ₽:\n");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         StringBuilder summary = new StringBuilder("Коробки дешевле " + price + " ₽:\n");
@@ -260,13 +282,13 @@ public class WebhookService {
         }
         response.add(summary.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleMoreExpensive(Integer price) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-
+        List<OutputContext> contexts = new ArrayList<>();
 
         List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() > price)
                 .collect(Collectors.toList());
@@ -274,7 +296,7 @@ public class WebhookService {
         if(cheaper.size() == 0){
             response.add("Не нашлось коробок дороже "+  price + " ₽:\n");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         StringBuilder summary = new StringBuilder("Коробки дороже " + price + " ₽:\n");
@@ -283,13 +305,13 @@ public class WebhookService {
         }
         response.add(summary.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleChangeBox(String from, String to, String userSession){
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-
+        List<OutputContext> contexts = new ArrayList<>();
 
         Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
                 .findFirst().orElse(null);
@@ -297,7 +319,7 @@ public class WebhookService {
         if (userCart == null || userCart.getBoxes().size() == 0) {
             response.add("В вашей корзине сейчас пусто. Нечего заменять");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         Box changedBox = userCart.getBoxes().
@@ -305,14 +327,14 @@ public class WebhookService {
         if (changedBox == null) {
             response.add("Кажется такой коробки нет в вашей корзине. Можете сказать по другому?");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         Box addedBox = allBoxes.stream().filter(box -> box.getBoxName().equals(to)).findFirst().orElse(null);
         if (addedBox == null) {
             response.add("Кажется, коробки на которую вы хотите заменить, нет в ассортименте. Можете сказать по другому?");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         userCart.removeFromCart(changedBox);
@@ -320,13 +342,13 @@ public class WebhookService {
 
         response.add("Заменил коробку. Вместо неё теперь: " + addedBox.getBoxName());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleEraseCart(String userSession){
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-
+        List<OutputContext> contexts = new ArrayList<>();
 
         Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
                 .findFirst().orElse(null);
@@ -334,7 +356,7 @@ public class WebhookService {
         if (userCart == null || userCart.getBoxes().size() == 0) {
             response.add("Очистил корзину, хотя там и так ничего не было");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         allUsersCarts.remove(userCart);
@@ -342,12 +364,38 @@ public class WebhookService {
 
         response.add("В вашей корзине теперь чисто");
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
+    }
+
+    private Fulfillment handleMakeOrder(String userSession, Parameters params){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("В вашей корзине пусто. Давайте добавим туда что-нибудь.");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        response.add(userCart.toString() + "\n" + "Можем перейти к оформлению?");
+        text.add(new Text(new Text2(response)));
+        List<OutputContext> outputContexts = new ArrayList<>();
+        Parameters newParams = new Parameters(params.getBoxtype(), params.getBoxname(), params.getProductname(),
+                params.getNumber(), params.getCardinal(), params.getFrom(), params.getTo(), "ok");
+        String contextName = "projects/newagent-ydqn/agent/sessions/" + userSession + "/contexts/orderInfo";
+        outputContexts.add(new OutputContext(contextName, 5, newParams));
+        return new Fulfillment(text, outputContexts);
     }
 
     private Fulfillment resolveBoxesIntent(String boxType) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
 
         if (boxType.equals("овощная")) {
             response.add("Овощные коробки:\n" +
@@ -355,55 +403,64 @@ public class WebhookService {
                     "  – Овощи для готовки, 1.5 кг (750 ₽)\n" +
                     "  – Овощи для салатов, 1.2 кг (900 ₽)");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         } else if (boxType.equals("лучший выбор")) {
             response.add( "Лучший выбор\n" +
                     "  – Демо-коробка, 4.4 кг (4000 ₽)\n" +
                     "  – Весенняя коробка, 1.8 кг (1600 ₽)\n" +
                     "  – Не болей, 2.7 кг (1850 ₽)");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+            return new Fulfillment(text, contexts);
         }
 
         response.add("Фруктовые коробки:\n" +
                 "  – Коробка недели,  1.5 кг (1200 ₽)");
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
 
     }
 
     private Fulfillment resolveBoxIntent(String boxName) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
 
-        if (boxName.equals("Коробка недели")) {
-            response.add(allBoxes.get(0).toString());
-            text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
-        } else if (boxName.equals("Базовый набор")) {
-            response.add(allBoxes.get(1).toString());
-            text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
-        } else if (boxName.equals("Овощи для готовки")) {
-            response.add(allBoxes.get(2).toString());
-            text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
-        } else if (boxName.equals("Овощи для салатов")) {
-            response.add(allBoxes.get(3).toString());
-            text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
-        } else if (boxName.equals("Демо-коробка")) {
-            response.add(allBoxes.get(4).toString());
-            text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
-        } else if (boxName.equals("Весенняя коробка")) {
-            response.add(allBoxes.get(5).toString());
-            text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
-        } else if (boxName.equals("Не болей")) {
-            response.add(allBoxes.get(6).toString());
-            text.add(new Text(new Text2(response)));
-            return new Fulfillment(text);
+        switch (boxName) {
+            case "Коробка недели" -> {
+                response.add(allBoxes.get(0).toString());
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text, contexts);
+            }
+            case "Базовый набор" -> {
+                response.add(allBoxes.get(1).toString());
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text, contexts);
+            }
+            case "Овощи для готовки" -> {
+                response.add(allBoxes.get(2).toString());
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text, contexts);
+            }
+            case "Овощи для салатов" -> {
+                response.add(allBoxes.get(3).toString());
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text, contexts);
+            }
+            case "Демо-коробка" -> {
+                response.add(allBoxes.get(4).toString());
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text, contexts);
+            }
+            case "Весенняя коробка" -> {
+                response.add(allBoxes.get(5).toString());
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text, contexts);
+            }
+            case "Не болей" -> {
+                response.add(allBoxes.get(6).toString());
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text,contexts);
+            }
         }
         response.add("Можем порекомендовать следующие коробки:\n" +
                 "  – Демо-коробка, 4.4 кг (4000 ₽)\n" +
@@ -411,7 +468,7 @@ public class WebhookService {
                 "  – Не болей, 2.7 кг (1850 ₽)\n" +
                 "Про какую коробку хотите узнать подробнее?");
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text);
+        return new Fulfillment(text, contexts);
     }
 
     private void initProducts() {

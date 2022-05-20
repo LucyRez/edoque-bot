@@ -22,7 +22,7 @@ public class Parameters {
     private Integer cardinal;
     private String from;
     private String to;
-
+    private String status;
 
 
 }
