@@ -126,6 +126,9 @@ public class WebhookService {
                 String phone = context.getParameters().getPhone();
                 String deliveryTimeInterval = context.getParameters().getDeliveryTimeInterval();
                 Boolean shouldCall = context.getParameters().getShouldCall();
+                if (shouldCall == null) {
+                    shouldCall = true;
+                }
                 String comment = request.getQueryResult().getParameters().getComment();
                 Integer tips = context.getParameters().getTips();
                 return handleOptParams(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, shouldCall, comment, tips);
