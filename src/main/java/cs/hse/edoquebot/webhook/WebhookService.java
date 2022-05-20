@@ -194,7 +194,7 @@ public class WebhookService {
         }
 
         Order order = new Order(address, deliveryDate, name, deliveryZone, userCart.getSum(), email,
-                phone, deliveryTimeInterval, true, null, null);
+                phone, deliveryTimeInterval, shouldCall, comment, tips);
 
 
         response.add(order.toString());
