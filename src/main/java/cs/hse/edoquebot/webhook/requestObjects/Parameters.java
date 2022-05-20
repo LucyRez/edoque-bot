@@ -29,5 +29,8 @@ public class Parameters {
     private String email;
     private String phone;
     private String deliveryTimeInterval;
+    private Boolean shouldCall;
+    private String comment;
+    private Integer tips;
 
 }

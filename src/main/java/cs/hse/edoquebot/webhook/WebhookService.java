@@ -34,6 +34,8 @@ public class WebhookService {
         String intent = request.getQueryResult().getIntent().getDisplayName();
         List<OutputContext> contexts = request.getQueryResult().getOutputContexts();
 
+
+
         switch (intent) {
             case "Какие есть коробки" -> {
                 String boxType = request.getQueryResult().getParameters().getBoxtype();
@@ -99,6 +101,50 @@ public class WebhookService {
                 String deliveryTimeInterval = request.getQueryResult().getParameters().getDeliveryTimeInterval();
                 return handleConfirmOrder(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval);
             }
+            case "Оформи заказ - call" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts().stream().filter(x -> x.getName().contains("orderinfofilled")).findFirst().get();
+                String userSession = request.getSession();
+                String address = context.getParameters().getAddress();
+                String deliveryDate = context.getParameters().getDeliveryDate();
+                String name = context.getParameters().getName();
+                String deliveryZone = context.getParameters().getDeliveryZone();
+                String email = context.getParameters().getEmail();
+                String phone = context.getParameters().getPhone();
+                String deliveryTimeInterval = context.getParameters().getDeliveryTimeInterval();
+                String comment = context.getParameters().getComment();
+                Integer tips = context.getParameters().getTips();
+                return handleOptParams(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, false, comment, tips);
+            }
+            case "Оформи заказ - comment" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts().stream().filter(x -> x.getName().contains("orderinfofilled")).findFirst().get();
+                String userSession = request.getSession();
+                String address = context.getParameters().getAddress();
+                String deliveryDate = context.getParameters().getDeliveryDate();
+                String name = context.getParameters().getName();
+                String deliveryZone = context.getParameters().getDeliveryZone();
+                String email = context.getParameters().getEmail();
+                String phone = context.getParameters().getPhone();
+                String deliveryTimeInterval = context.getParameters().getDeliveryTimeInterval();
+                Boolean shouldCall = context.getParameters().getShouldCall();
+                String comment = request.getQueryResult().getParameters().getComment();
+                Integer tips = context.getParameters().getTips();
+                return handleOptParams(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, shouldCall, comment, tips);
+            }
+            case "Оформи заказ - tips" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts().stream().filter(x -> x.getName().contains("orderinfofilled")).findFirst().get();
+                String userSession = request.getSession();
+                String address = context.getParameters().getAddress();
+                String deliveryDate = context.getParameters().getDeliveryDate();
+                String name = context.getParameters().getName();
+                String deliveryZone = context.getParameters().getDeliveryZone();
+                String email = context.getParameters().getEmail();
+                String phone = context.getParameters().getPhone();
+                String deliveryTimeInterval = context.getParameters().getDeliveryTimeInterval();
+                Boolean shouldCall = context.getParameters().getShouldCall();
+                String comment = context.getParameters().getComment();
+                Integer tips = request.getQueryResult().getParameters().getTips();
+                return handleOptParams(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, shouldCall, comment, tips);
+            }
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
@@ -122,12 +168,46 @@ public class WebhookService {
         }
 
         Order order = new Order(address, deliveryDate, name, deliveryZone, userCart.getSum(), email,
-                phone, deliveryTimeInterval);
+                phone, deliveryTimeInterval, true, null, null);
 
 
         response.add(order.toString());
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
+
+    }
+
+    private Fulfillment handleOptParams(String userSession, String address, String deliveryDate,
+                                   String name, String deliveryZone, String email, String phone,
+                                   String deliveryTimeInterval, Boolean shouldCall, String comment, Integer tips) {
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null) {
+            response.add("Кажется, ваша корзина пустая. Не могу продолжить оформление заказа");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        Order order = new Order(address, deliveryDate, name, deliveryZone, userCart.getSum(), email,
+                phone, deliveryTimeInterval, true, null, null);
+
+
+        response.add(order.toString());
+        text.add(new Text(new Text2(response)));
+
+        List<OutputContext> outputContexts = new ArrayList<>();
+        Parameters newParams = new Parameters(null, null, null,
+                null, null, null, null, "ok", address,
+                deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, shouldCall, comment, tips);
+        String contextName = userSession + "/contexts/orderinfofilled";
+        outputContexts.add(new OutputContext(contextName, 2, newParams));
+
+        return new Fulfillment(text, outputContexts);
 
     }
 
@@ -427,7 +507,7 @@ public class WebhookService {
         List<OutputContext> outputContexts = new ArrayList<>();
         Parameters newParams = new Parameters(params.getBoxtype(), params.getBoxname(), params.getProductname(),
                 params.getNumber(), params.getCardinal(), params.getFrom(), params.getTo(), "ok", "",
-                "", null, "", "", "", "");
+                "", null, "", "", "", "", null, null, null);
         String contextName = userSession + "/contexts/orderinfo";
         outputContexts.add(new OutputContext(contextName, 5, newParams));
         return new Fulfillment(text, outputContexts);

@@ -21,9 +21,11 @@ public class Order {
     private String email;
     private String phone;
     private String deliveryTimeInterval;
+    private Boolean shouldCall;
+    private String comment;
+    private Integer tips;
 
-
-    private Integer calculateDeliveryPrice(){
+    private Integer calculateDeliveryPrice() {
         switch (deliveryZone) {
             case "Москва в пределах МКАД" -> {
                 if (orderSum >= 1500) {
@@ -60,21 +62,45 @@ public class Order {
         return 0;
     }
 
+    private String call() {
+        if (shouldCall) {
+            return "Мы вам перезвоним для подтверждения заказа. \n";
+        }
+        return "Звонить не будем. \n";
+    }
+
+    private String tipsString() {
+        if (tips == null) {
+            return "Вы можете оставить чаевые курьеру. \n\n";
+        }
+        return "\n";
+    }
+
+    private String commentString() {
+        if (comment != null) {
+            return "Комментарий: " + comment + ". \n";
+        }
+        return "Можете добавить комментарий к заказу. \n";
+    }
+
     @Override
     public String toString() {
         return "Отлично \n" +
                 "\n" +
                 "Имя: " + name + "\n" +
-                "Телефон: " + phone +"\n" +
+                "Телефон: " + phone + "\n" +
                 "email: " + email + "\n" +
                 "адрес: " + address + "\n" +
                 "\n" +
                 "Доставим " + deliveryDate + "\n" +
-                "Стоимость заказа с учётом доставки: " + (orderSum + calculateDeliveryPrice())+ "₽\n" +
+                "Стоимость заказа с учётом доставки: " + (orderSum + calculateDeliveryPrice() + tips) + "₽\n" +
                 "Оплата производится курьеру картой при получении \n" +
                 "\n" +
-                "Мы вам перезвоним для подтверждения заказа. \n" +
+                call() +
                 "\n" +
+                commentString() +
+                "\n" +
+                tipsString() +
                 "Оформляем заказ?";
     }
 }
