@@ -34,7 +34,7 @@ public class Cart {
     @Override
     public String toString() {
         if(boxes.size() == 0){
-            return "В вашей корзине пусто. Может что-нибудь добавить?";
+            return "В вашей корзине пусто";
         }
 
         StringBuilder allBoxes = new StringBuilder();

@@ -377,7 +377,7 @@ public class WebhookService {
                 .findFirst().orElse(null);
 
         if (userCart == null || userCart.getBoxes().size() == 0) {
-            response.add("В вашей корзине пусто. Давайте добавим туда что-нибудь.");
+            response.add("В вашей корзине пусто");
             text.add(new Text(new Text2(response)));
             return new Fulfillment(text, contexts);
         }
