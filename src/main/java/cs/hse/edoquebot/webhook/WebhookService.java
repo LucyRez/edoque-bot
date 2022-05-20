@@ -387,7 +387,7 @@ public class WebhookService {
         List<OutputContext> outputContexts = new ArrayList<>();
         Parameters newParams = new Parameters(params.getBoxtype(), params.getBoxname(), params.getProductname(),
                 params.getNumber(), params.getCardinal(), params.getFrom(), params.getTo(), "ok");
-        String contextName = "projects/newagent-ydqn/agent/sessions/" + userSession + "/contexts/orderInfo";
+        String contextName = "projects/newagent-ydqn/agent/sessions/" + userSession + "/contexts/orderinfo";
         outputContexts.add(new OutputContext(contextName, 5, newParams));
         return new Fulfillment(text, outputContexts);
     }
