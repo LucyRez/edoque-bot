@@ -209,6 +209,7 @@ public class WebhookService {
                 deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, shouldCall, comment, tips);
         String contextName = userSession + "/contexts/orderinfofilled";
         outputContexts.add(new OutputContext(contextName, 2, newParams));
+        outputContexts.add(new OutputContext(userSession + "/contexts/-followup-2", 2, null));
 
         return new Fulfillment(text, outputContexts);
 
