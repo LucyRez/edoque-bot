@@ -87,9 +87,9 @@ public class Order {
     }
 
     private String parseDate(){
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyy", Locale.ENGLISH);
-        LocalDate date = LocalDate.parse(deliveryDate, inputFormatter);
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyy", Locale.ENGLISH);
+        LocalDate date = LocalDate.parse(deliveryDate.split("T")[0], inputFormatter);
         return outputFormatter.format(date);
     }
 
