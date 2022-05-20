@@ -83,6 +83,11 @@ public class Order {
         return "Можете добавить комментарий к заказу. \n";
     }
 
+    private int intTips() {
+        if (tips == null) return 0;
+        return tips;
+    }
+
     @Override
     public String toString() {
         return "Отлично \n" +
@@ -93,7 +98,7 @@ public class Order {
                 "адрес: " + address + "\n" +
                 "\n" +
                 "Доставим " + deliveryDate + "\n" +
-                "Стоимость заказа с учётом доставки: " + (orderSum + calculateDeliveryPrice() + tips) + "₽\n" +
+                "Стоимость заказа с учётом доставки: " + (orderSum + calculateDeliveryPrice() + intTips()) + "₽\n" +
                 "Оплата производится курьеру картой при получении \n" +
                 "\n" +
                 call() +
