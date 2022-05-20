@@ -35,7 +35,6 @@ public class WebhookService {
         List<OutputContext> contexts = request.getQueryResult().getOutputContexts();
 
 
-
         switch (intent) {
             case "Какие есть коробки" -> {
                 String boxType = request.getQueryResult().getParameters().getBoxtype();
@@ -102,7 +101,8 @@ public class WebhookService {
                 return handleConfirmOrder(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval);
             }
             case "Оформи заказ - call" -> {
-                OutputContext context = request.getQueryResult().getOutputContexts().stream().filter(x -> x.getName().contains("orderinfofilled")).findFirst().get();
+                OutputContext context = request.getQueryResult().getOutputContexts()
+                        .stream().filter(x -> x.getName().contains("orderinfofilled")).findFirst().get();
                 String userSession = request.getSession();
                 String address = context.getParameters().getAddress();
                 String deliveryDate = context.getParameters().getDeliveryDate();
@@ -290,6 +290,12 @@ public class WebhookService {
         List<Box> withoutProduct = allBoxes.stream().filter(box -> box.getProducts()
                         .stream().anyMatch(product -> product.getName().equals(productName)))
                 .collect(Collectors.toList());
+
+        if(withoutProduct.size() == 0){
+            response.add("С этим продуктом ничего нет");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
 
         StringBuilder summary = new StringBuilder("Можем предложить следующие коробки: \n");
         for (Box box : withoutProduct) {
