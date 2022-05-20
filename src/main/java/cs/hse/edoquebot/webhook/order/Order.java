@@ -107,7 +107,7 @@ public class Order {
                 "email: " + email + "\n" +
                 "адрес: " + address + "\n" +
                 "\n" +
-                "Доставим " + parseDate() + "\n" +
+                "Доставим " + parseDate() + ", "+ deliveryTimeInterval + "\n" +
                 "Стоимость заказа с учётом доставки: " + (orderSum + calculateDeliveryPrice() + intTips()) + "₽\n" +
                 "Оплата производится курьеру картой при получении \n" +
                 "\n" +
