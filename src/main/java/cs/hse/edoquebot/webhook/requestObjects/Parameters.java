@@ -1,18 +1,17 @@
 package cs.hse.edoquebot.webhook.requestObjects;
 
 
-import javax.annotation.Generated;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-@AllArgsConstructor
-@EqualsAndHashCode
+
 @Getter
 @Setter
+@AllArgsConstructor
+@EqualsAndHashCode
 public class Parameters {
 
     private String boxtype;
@@ -23,6 +22,12 @@ public class Parameters {
     private String from;
     private String to;
     private String status;
-
+    private String address;
+    private String deliveryDate;
+    private String name;
+    private String deliveryZone;
+    private String email;
+    private String phone;
+    private String deliveryTimeInterval;
 
 }

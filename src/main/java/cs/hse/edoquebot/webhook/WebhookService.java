@@ -3,10 +3,13 @@ package cs.hse.edoquebot.webhook;
 import cs.hse.edoquebot.webhook.boxes.Box;
 import cs.hse.edoquebot.webhook.boxes.Product;
 import cs.hse.edoquebot.webhook.cart.Cart;
+import cs.hse.edoquebot.webhook.requestObjects.Name;
+import cs.hse.edoquebot.webhook.order.Order;
 import cs.hse.edoquebot.webhook.requestObjects.*;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,10 +88,47 @@ public class WebhookService {
                 String userSession = request.getSession();
                 return handleMakeOrder(userSession, request.getQueryResult().getParameters());
             }
+            case "Оформи заказ - order" -> {
+                String userSession = request.getSession();
+                String address = request.getQueryResult().getParameters().getAddress();
+                String deliveryDate = request.getQueryResult().getParameters().getDeliveryDate();
+                String name = request.getQueryResult().getParameters().getName();
+                String deliveryZone = request.getQueryResult().getParameters().getDeliveryZone();
+                String email = request.getQueryResult().getParameters().getEmail();
+                String phone = request.getQueryResult().getParameters().getPhone();
+                String deliveryTimeInterval = request.getQueryResult().getParameters().getDeliveryTimeInterval();
+                return handleConfirmOrder(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval);
+            }
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
+    }
+
+    private Fulfillment handleConfirmOrder(String userSession, String address, String deliveryDate,
+                                           String name, String deliveryZone, String email, String phone,
+                                           String deliveryTimeInterval) {
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null) {
+            response.add("Кажется, ваша корзина пустая. Не могу продолжить оформление заказа");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        Order order = new Order(address, deliveryDate, name, deliveryZone, userCart.getSum(), email,
+                phone, deliveryTimeInterval);
+
+
+        response.add(order.toString());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text, contexts);
+
     }
 
     private Fulfillment handleGetAllBoxes(String boxType) {
@@ -386,7 +426,8 @@ public class WebhookService {
         text.add(new Text(new Text2(response)));
         List<OutputContext> outputContexts = new ArrayList<>();
         Parameters newParams = new Parameters(params.getBoxtype(), params.getBoxname(), params.getProductname(),
-                params.getNumber(), params.getCardinal(), params.getFrom(), params.getTo(), "ok");
+                params.getNumber(), params.getCardinal(), params.getFrom(), params.getTo(), "ok", "",
+                "", null, "", "", "", "");
         String contextName = userSession + "/contexts/orderinfo";
         outputContexts.add(new OutputContext(contextName, 5, newParams));
         return new Fulfillment(text, outputContexts);

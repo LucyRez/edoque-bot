@@ -31,6 +31,14 @@ public class Cart {
 
     }
 
+    public Integer getSum(){
+        int sum = 0;
+        for (Box box: boxes) {
+            sum += box.getPrice();
+        }
+        return sum;
+    }
+
     @Override
     public String toString() {
         if(boxes.size() == 0){
