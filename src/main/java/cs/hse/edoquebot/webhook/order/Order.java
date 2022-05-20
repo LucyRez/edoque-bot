@@ -6,7 +6,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Getter
 @Setter
@@ -83,6 +86,13 @@ public class Order {
         return "Можете добавить комментарий к заказу. \n";
     }
 
+    private String parseDate(){
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyy", Locale.ENGLISH);
+        LocalDate date = LocalDate.parse(deliveryDate, inputFormatter);
+        return outputFormatter.format(date);
+    }
+
     private int intTips() {
         if (tips == null) return 0;
         return tips;
@@ -97,7 +107,7 @@ public class Order {
                 "email: " + email + "\n" +
                 "адрес: " + address + "\n" +
                 "\n" +
-                "Доставим " + deliveryDate + "\n" +
+                "Доставим " + parseDate() + "\n" +
                 "Стоимость заказа с учётом доставки: " + (orderSum + calculateDeliveryPrice() + intTips()) + "₽\n" +
                 "Оплата производится курьеру картой при получении \n" +
                 "\n" +
