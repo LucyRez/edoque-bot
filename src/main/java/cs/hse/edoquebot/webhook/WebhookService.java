@@ -148,8 +148,34 @@ public class WebhookService {
                 Integer tips = request.getQueryResult().getParameters().getTips();
                 return handleOptParams(userSession, address, deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, shouldCall, comment, tips);
             }
+            case "Оформи заказ - confirm" -> {
+                String userSession = request.getSession();
+                return handleConfirmOrder(userSession);
+            }
         }
         response.add("Я не знаю, что на это ответить");
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text, contexts);
+    }
+
+    private Fulfillment handleConfirmOrder(String userSession){
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("Ваш заказ оформлен  Ожидайте курьера  Будем рады вам снова!");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        allUsersCarts.remove(userCart);
+        allUsersCarts.add(new Cart(userSession));
+
+        response.add("Ваш заказ оформлен  Ожидайте курьера  Будем рады вам снова!");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
     }
