@@ -94,6 +94,14 @@ public class WebhookService {
                 String userSession = request.getSession();
                 return handleChangeBox(from, to, userSession);
             }
+            case "Замени коробку - cancel" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts()
+                        .stream().filter(x -> x.getName().contains("-followup-9")).findFirst().get();
+                String from = context.getParameters().getFrom();
+                String to = context.getParameters().getTo();
+                String userSession = request.getSession();
+                return handleRevertChangeBox(from, to, userSession);
+            }
             case "Очисти корзину" -> {
                 String userSession = request.getSession();
                 return handleEraseCart(userSession);
@@ -672,6 +680,43 @@ public class WebhookService {
         userCart.addToCart(addedBox);
 
         response.add("Заменил коробку. Вместо неё теперь: " + addedBox.getBoxName());
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text, contexts);
+    }
+
+    private Fulfillment handleRevertChangeBox(String to, String from, String userSession) {
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("В вашей корзине сейчас пусто. Нечего заменять");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        Box changedBox = userCart.getBoxes().
+                stream().filter(box -> box.getBoxName().equals(from)).findFirst().orElse(null);
+        if (changedBox == null) {
+            response.add("Кажется такой коробки нет в вашей корзине. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        Box addedBox = allBoxes.stream().filter(box -> box.getBoxName().equals(to)).findFirst().orElse(null);
+        if (addedBox == null) {
+            response.add("Кажется, коробки на которую вы хотите заменить, нет в ассортименте. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        userCart.removeFromCart(changedBox);
+        userCart.addToCart(addedBox);
+
+        response.add("Вернул все как было. В корзине теперь, как и раньше:" + addedBox.getBoxName());
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
     }
