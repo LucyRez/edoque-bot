@@ -175,6 +175,36 @@ public class WebhookService {
 
                 return handleAddBoxToCart(boxName, quantity, userSession);
             }
+            case "Расскажи про коробку - cancel" -> {
+                // Просто берём из контекста описания название и кол-во
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("-about-box-add")).findFirst().get();
+                String userSession = request.getSession();
+                String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
+
+                return handleRevertAdd(boxName, quantity, userSession);
+            }
+            case "Добавь в корзину - cancel" -> {
+                // Просто берём из контекста описания название и кол-во
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("-followup-3")).findFirst().get();
+                String userSession = request.getSession();
+                String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
+
+                return handleRevertAdd(boxName, quantity, userSession);
+            }
+            case "Добавили одну коробку - cancel" -> {
+                // Просто берём из контекста описания название и кол-во
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
+                String userSession = request.getSession();
+                String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
+
+                return handleRevertAdd(boxName, quantity, userSession);
+            }
             case "Коробки с продуктом - add", "Коробки без продукта - add", "Какие есть коробки - add",
                     "Коробки до n рублей - add", "Коробки от n рублей - add" -> {
                 OutputContext context = request.getQueryResult().getOutputContexts().
@@ -350,7 +380,7 @@ public class WebhookService {
                     null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
-            outputContexts.add(new OutputContext(contextName, 1, newParams));
+            outputContexts.add(new OutputContext(contextName, 2, newParams));
         }
 
         return new Fulfillment(text, outputContexts);
@@ -384,10 +414,45 @@ public class WebhookService {
                     null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
-            outputContexts.add(new OutputContext(contextName, 1, newParams));
+            outputContexts.add(new OutputContext(contextName, 2, newParams));
         }
 
         return new Fulfillment(text, outputContexts);
+    }
+
+    private Fulfillment handleRevertAdd(String boxName, Integer quantity, String userSession) {
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("В вашей корзине сейчас пусто. Нечего убирать");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        Box removedBox = userCart.getBoxes().
+                stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
+        if (removedBox == null) {
+            response.add("Не получилось отменить ваше действие. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        if (quantity == null) {
+            quantity = 1;
+        }
+
+        for (int i = 0; i < quantity; i++) {
+            userCart.removeFromCart(removedBox);;
+        }
+
+        response.add("Убрал из корзины");
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text, contexts);
     }
 
     private Fulfillment handleAddBoxToCart(String boxName, Integer quantity, String userSession) {
@@ -534,7 +599,7 @@ public class WebhookService {
                     null, null, null, null,
                     null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
-            outputContexts.add(new OutputContext(contextName, 1, newParams));
+            outputContexts.add(new OutputContext(contextName, 2, newParams));
         }
 
         return new Fulfillment(text, outputContexts);
@@ -568,7 +633,7 @@ public class WebhookService {
                     null, null, null, null,
                     null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
-            outputContexts.add(new OutputContext(contextName, 1, newParams));
+            outputContexts.add(new OutputContext(contextName, 2, newParams));
         }
 
         return new Fulfillment(text, outputContexts);
@@ -689,7 +754,7 @@ public class WebhookService {
         Parameters newParams = new Parameters(null, "Коробка недели", null,
                 null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
-        outputContexts.add(new OutputContext(contextName, 1, newParams));
+        outputContexts.add(new OutputContext(contextName, 2, newParams));
 
         return new Fulfillment(text, outputContexts);
 
