@@ -46,7 +46,8 @@ public class WebhookService {
             }
             case "Коробки без продукта" -> {
                 String productName = request.getQueryResult().getParameters().getProductname();
-                return handleWithoutProduct(productName);
+                String userSession = request.getSession();
+                return handleWithoutProduct(productName, userSession);
             }
             case "Коробки с продуктом" -> {
                 String productName = request.getQueryResult().getParameters().getProductname();
@@ -164,6 +165,17 @@ public class WebhookService {
                 return handleAddBoxToCart(boxName, quantity, userSession);
             }
             case "Коробки с продуктом - add" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
+                String userSession = request.getSession();
+                // Название коробки берём из контекста
+                String boxName = context.getParameters().getBoxname();
+                // Кол-во коробок берём из простых параметров запроса
+                Integer quantity = request.getQueryResult().getParameters().getNumber();
+
+                return handleAddBoxToCart(boxName, quantity, userSession);
+            }
+            case "Коробки без продукта - add" -> {
                 OutputContext context = request.getQueryResult().getOutputContexts().
                         stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
                 String userSession = request.getSession();
@@ -313,10 +325,10 @@ public class WebhookService {
         }
     }
 
-    private Fulfillment handleWithoutProduct(String productName) {
+    private Fulfillment handleWithoutProduct(String productName, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-        List<OutputContext> contexts = new ArrayList<>();
+        List<OutputContext> outputContexts = new ArrayList<>();
 
         List<Box> withoutProduct = allBoxes.stream().filter(box -> box.getProducts()
                         .stream().noneMatch(product -> product.getName().equals(productName)))
@@ -328,7 +340,17 @@ public class WebhookService {
         }
         response.add(summary.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text, contexts);
+
+        if (withoutProduct.size() == 1) {
+            Box box = withoutProduct.get(0);
+            Parameters newParams = new Parameters(null, box.getBoxName(), null,
+                    null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, null, null);
+            String contextName = userSession + "/contexts/one-item";
+            outputContexts.add(new OutputContext(contextName, 2, newParams));
+        }
+
+        return new Fulfillment(text, outputContexts);
     }
 
     private Fulfillment handleWithProduct(String productName, String userSession) {
