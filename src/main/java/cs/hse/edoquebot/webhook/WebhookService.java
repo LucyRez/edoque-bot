@@ -178,7 +178,7 @@ public class WebhookService {
             case "Расскажи про коробку - cancel" -> {
                 // Просто берём из контекста описания название и кол-во
                 OutputContext context = request.getQueryResult().getOutputContexts().
-                        stream().filter(x -> x.getName().contains("-about-box-add")).findFirst().get();
+                        stream().filter(x -> x.getName().contains("-followup-4")).findFirst().get();
                 String userSession = request.getSession();
                 String boxName = context.getParameters().getBoxname();
                 Integer quantity = context.getParameters().getNumber();
