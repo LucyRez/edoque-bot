@@ -105,7 +105,7 @@ public class Order {
                 "Имя: " + name + "\n" +
                 "Телефон: " + phone + "\n" +
                 "email: " + email + "\n" +
-                "адрес: " + address + "\n" +
+                "Адрес: " + address + "\n" +
                 "\n" +
                 "Доставим " + parseDate() + ", "+ deliveryTimeInterval + "\n" +
                 "Стоимость заказа с учётом доставки: " + (orderSum + calculateDeliveryPrice() + intTips()) + "₽\n" +

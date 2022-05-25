@@ -8,7 +8,9 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -48,9 +50,14 @@ public class Cart {
         StringBuilder allBoxes = new StringBuilder();
         int price = 0;
 
-        for (Box box: boxes) {
-            allBoxes.append(" – ").append(box.getBoxName()).append("\n");
-            price += box.getPrice();
+        Map<String, List<Box>> boxesGrouped =
+                boxes.stream().collect(Collectors.groupingBy(box -> box.getBoxName()));
+
+
+        for (var entry: boxesGrouped.entrySet()) {
+            int countInGroup = entry.getValue().size();
+            allBoxes.append(" – ").append(entry.getKey()).append(", ").append(countInGroup).append("шт.").append(" \n");
+            price += (countInGroup*entry.getValue().get(0).getPrice());
         }
 
         String priceTag = "Итого: " + price + "₽";
