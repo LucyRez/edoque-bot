@@ -240,6 +240,19 @@ public class WebhookService {
 
                 return handleAddBoxToCart(boxName, newQuantity - quantity, userSession, true);
             }
+            case "Расскажи про коробку - давай n" -> {
+                // Просто берём из контекста описания название и кол-во
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("-followup-4")).findFirst().get();
+                String userSession = request.getSession();
+                String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
+
+                // Новое кол-во коробок берём из простых параметров запроса
+                Integer newQuantity = request.getQueryResult().getParameters().getNumber();
+
+                return handleAddBoxToCart(boxName, newQuantity - quantity, userSession, true);
+            }
             case "Коробки с продуктом - add", "Коробки без продукта - add", "Какие есть коробки - add",
                     "Коробки до n рублей - add", "Коробки от n рублей - add" -> {
                 OutputContext context = request.getQueryResult().getOutputContexts().
