@@ -60,7 +60,7 @@ public class WebhookService {
                 String boxName = request.getQueryResult().getParameters().getBoxname();
                 Integer quantity = request.getQueryResult().getParameters().getNumber();
                 String userSession = request.getSession();
-                return handleAddBoxToCart(boxName, quantity, userSession);
+                return handleAddBoxToCart(boxName, quantity, userSession, false);
             }
             case "Удали коробку" -> {
                 String boxName = request.getQueryResult().getParameters().getBoxname();
@@ -181,7 +181,7 @@ public class WebhookService {
                 String boxName = context.getParameters().getBoxname();
                 Integer quantity = context.getParameters().getNumber();
 
-                return handleAddBoxToCart(boxName, quantity, userSession);
+                return handleAddBoxToCart(boxName, quantity, userSession, false);
             }
             case "Расскажи про коробку - cancel" -> {
                 // Просто берём из контекста описания название и кол-во
@@ -213,6 +213,33 @@ public class WebhookService {
 
                 return handleRevertAdd(boxName, quantity, userSession);
             }
+            case "Добавили одну коробку – давай n" -> {
+                // Просто берём из контекста описания название и кол-во
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
+                String userSession = request.getSession();
+                String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
+
+                // Новое кол-во коробок берём из простых параметров запроса
+                Integer newQuantity = request.getQueryResult().getParameters().getNumber();
+
+                // Добавляем новое кол-во коробок
+                return handleAddBoxToCart(boxName, newQuantity - quantity, userSession, true);
+            }
+            case "Добавь в корзину - давай n" -> {
+                // Просто берём из контекста описания название и кол-во
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("-followup-3")).findFirst().get();
+                String userSession = request.getSession();
+                String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
+
+                // Новое кол-во коробок берём из простых параметров запроса
+                Integer newQuantity = request.getQueryResult().getParameters().getNumber();
+
+                return handleAddBoxToCart(boxName, newQuantity - quantity, userSession, true);
+            }
             case "Коробки с продуктом - add", "Коробки без продукта - add", "Какие есть коробки - add",
                     "Коробки до n рублей - add", "Коробки от n рублей - add" -> {
                 OutputContext context = request.getQueryResult().getOutputContexts().
@@ -223,7 +250,7 @@ public class WebhookService {
                 // Кол-во коробок берём из простых параметров запроса
                 Integer quantity = request.getQueryResult().getParameters().getNumber();
 
-                return handleAddBoxToCart(boxName, quantity, userSession);
+                return handleAddBoxToCart(boxName, quantity, userSession, false);
             }
 
 
@@ -455,7 +482,8 @@ public class WebhookService {
         }
 
         for (int i = 0; i < quantity; i++) {
-            userCart.removeFromCart(removedBox);;
+            userCart.removeFromCart(removedBox);
+            ;
         }
 
         response.add("Убрал из корзины");
@@ -463,7 +491,7 @@ public class WebhookService {
         return new Fulfillment(text, contexts);
     }
 
-    private Fulfillment handleAddBoxToCart(String boxName, Integer quantity, String userSession) {
+    private Fulfillment handleAddBoxToCart(String boxName, Integer quantity, String userSession, Boolean additional) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
         List<OutputContext> contexts = new ArrayList<>();
@@ -487,13 +515,16 @@ public class WebhookService {
             quantity = 1;
         }
 
+
         for (int i = 0; i < quantity; i++) {
             userCart.addToCart(addedBox);
         }
 
-        if (quantity == 1) {
+        if (quantity == 1 && !additional) {
             response.add("Добавил в корзину");
 
+        } else if (additional) {
+            response.add("Добавил ещё " + quantity + " в корзину");
         } else {
             response.add("Добавил " + quantity + " коробки в корзину");
         }
