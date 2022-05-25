@@ -38,7 +38,9 @@ public class WebhookService {
         switch (intent) {
             case "Какие есть коробки" -> {
                 String boxType = request.getQueryResult().getParameters().getBoxtype();
-                return handleGetAllBoxes(boxType);
+                String userSession = request.getSession();
+
+                return handleGetAllBoxes(boxType, userSession);
             }
             case "Расскажи про коробку" -> {
                 String boxName = request.getQueryResult().getParameters().getBoxname();
@@ -186,6 +188,18 @@ public class WebhookService {
 
                 return handleAddBoxToCart(boxName, quantity, userSession);
             }
+            case "Какие есть коробки - add" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
+                String userSession = request.getSession();
+                // Название коробки берём из контекста
+                String boxName = context.getParameters().getBoxname();
+                // Кол-во коробок берём из простых параметров запроса
+                Integer quantity = request.getQueryResult().getParameters().getNumber();
+
+                return handleAddBoxToCart(boxName, quantity, userSession);
+            }
+
 
         }
         response.add("Я не знаю, что на это ответить");
@@ -276,13 +290,19 @@ public class WebhookService {
 
     }
 
-    private Fulfillment handleGetAllBoxes(String boxType) {
+    private Fulfillment handleGetAllBoxes(String boxType, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-        List<OutputContext> contexts = new ArrayList<>();
+        List<OutputContext> outputContexts = new ArrayList<>();
+
+        Parameters newParams = new Parameters(null, null, null,
+                null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null);
+        String contextName = userSession + "/contexts/one-item";
+        outputContexts.add(new OutputContext(contextName, 1, newParams));
 
         if (!boxType.equals("")) {
-            return resolveBoxesIntent(boxType);
+            return resolveBoxesIntent(boxType, userSession);
         } else {
             response.add("В нашем ассортименте есть:\n" +
                     " 1. Овощные коробки\n" +
@@ -296,7 +316,7 @@ public class WebhookService {
                     "  – Весенняя коробка, 1.8 кг (1600 ₽)\n" +
                     "  – Не болей, 2.7 кг (1850 ₽)");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text, contexts);
+            return new Fulfillment(text, outputContexts);
         }
     }
 
@@ -616,10 +636,16 @@ public class WebhookService {
         return new Fulfillment(text, outputContexts);
     }
 
-    private Fulfillment resolveBoxesIntent(String boxType) {
+    private Fulfillment resolveBoxesIntent(String boxType, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-        List<OutputContext> contexts = new ArrayList<>();
+        List<OutputContext> outputContexts = new ArrayList<>();
+
+        Parameters newParams = new Parameters(null, null, null,
+                null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null);
+        String contextName = userSession + "/contexts/one-item";
+        outputContexts.add(new OutputContext(contextName, 1, newParams));
 
         if (boxType.equals("овощная")) {
             response.add("Овощные коробки:\n" +
@@ -627,20 +653,26 @@ public class WebhookService {
                     "  – Овощи для готовки, 1.5 кг (750 ₽)\n" +
                     "  – Овощи для салатов, 1.2 кг (900 ₽)");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text, contexts);
+            return new Fulfillment(text, outputContexts);
         } else if (boxType.equals("лучший выбор")) {
             response.add("Лучший выбор\n" +
                     "  – Демо-коробка, 4.4 кг (4000 ₽)\n" +
                     "  – Весенняя коробка, 1.8 кг (1600 ₽)\n" +
                     "  – Не болей, 2.7 кг (1850 ₽)");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text, contexts);
+            return new Fulfillment(text, outputContexts);
         }
 
         response.add("Фруктовые коробки:\n" +
                 "  – Коробка недели,  1.5 кг (1200 ₽)");
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text, contexts);
+
+        newParams = new Parameters(null, "Коробка недели", null,
+                null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null);
+        outputContexts.add(new OutputContext(contextName, 1, newParams));
+
+        return new Fulfillment(text, outputContexts);
 
     }
 
