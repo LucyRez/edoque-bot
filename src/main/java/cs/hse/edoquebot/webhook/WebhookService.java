@@ -306,7 +306,7 @@ public class WebhookService {
                 .findFirst().orElse(null);
 
         if (userCart == null) {
-            response.add("Кажется, ваша корзина пустая. Не могу продолжить оформление заказа");
+            response.add("Кажется, в вашей корзине пусто. Не могу продолжить оформление заказа");
             text.add(new Text(new Text2(response)));
             return new Fulfillment(text, contexts);
         }
@@ -332,7 +332,7 @@ public class WebhookService {
                 .findFirst().orElse(null);
 
         if (userCart == null) {
-            response.add("Кажется, ваша корзина пустая. Не могу продолжить оформление заказа");
+            response.add("Кажется, в вашей корзине пусто. Не могу продолжить оформление заказа");
             text.add(new Text(new Text2(response)));
             return new Fulfillment(text, contexts);
         }
@@ -782,7 +782,7 @@ public class WebhookService {
         allUsersCarts.remove(userCart);
         allUsersCarts.add(new Cart(userSession));
 
-        response.add("В вашей корзине теперь чисто");
+        response.add("Очистил корзину. Может снова добавим туда что-нибудь?");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
     }
