@@ -295,11 +295,11 @@ public class WebhookService {
         List<String> response = new ArrayList<>();
         List<OutputContext> outputContexts = new ArrayList<>();
 
-        Parameters newParams = new Parameters(null, null, null,
-                null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null);
-        String contextName = userSession + "/contexts/one-item";
-        outputContexts.add(new OutputContext(contextName, 1, newParams));
+//        Parameters newParams = new Parameters(null, null, null,
+//                null, null, null, null, null, null,
+//                null, null, null, null, null, null, null, null, null);
+//        String contextName = userSession + "/contexts/one-item";
+//        outputContexts.add(new OutputContext(contextName, 1, newParams));
 
         if (!boxType.equals("")) {
             return resolveBoxesIntent(boxType, userSession);
@@ -641,11 +641,11 @@ public class WebhookService {
         List<String> response = new ArrayList<>();
         List<OutputContext> outputContexts = new ArrayList<>();
 
-        Parameters newParams = new Parameters(null, null, null,
-                null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null);
+//        Parameters newParams = new Parameters(null, null, null,
+//                null, null, null, null, null, null,
+//                null, null, null, null, null, null, null, null, null);
         String contextName = userSession + "/contexts/one-item";
-        outputContexts.add(new OutputContext(contextName, 1, newParams));
+//        outputContexts.add(new OutputContext(contextName, 1, newParams));
 
         if (boxType.equals("овощная")) {
             response.add("Овощные коробки:\n" +
@@ -667,7 +667,7 @@ public class WebhookService {
                 "  – Коробка недели,  1.5 кг (1200 ₽)");
         text.add(new Text(new Text2(response)));
 
-        newParams = new Parameters(null, "Коробка недели", null,
+        Parameters newParams = new Parameters(null, "Коробка недели", null,
                 null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
         outputContexts.add(new OutputContext(contextName, 1, newParams));
