@@ -152,6 +152,15 @@ public class WebhookService {
                 String userSession = request.getSession();
                 return handleConfirmOrder(userSession);
             }
+            case "Расскажи про коробку - add" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("-followup-4")).findFirst().get();
+                String userSession = request.getSession();
+                String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
+
+                return handleAddBoxToCart(boxName, quantity, userSession);
+            }
         }
         response.add("Я не знаю, что на это ответить");
         text.add(new Text(new Text2(response)));
