@@ -347,7 +347,7 @@ public class WebhookService {
                     null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
-            outputContexts.add(new OutputContext(contextName, 2, newParams));
+            outputContexts.add(new OutputContext(contextName, 1, newParams));
         }
 
         return new Fulfillment(text, outputContexts);
@@ -381,7 +381,7 @@ public class WebhookService {
                     null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
-            outputContexts.add(new OutputContext(contextName, 2, newParams));
+            outputContexts.add(new OutputContext(contextName, 1, newParams));
         }
         return new Fulfillment(text, outputContexts);
     }
