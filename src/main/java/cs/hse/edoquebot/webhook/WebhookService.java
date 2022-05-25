@@ -73,11 +73,13 @@ public class WebhookService {
             }
             case "Коробки до n рублей" -> {
                 Integer price = request.getQueryResult().getParameters().getCardinal();
-                return handleBoxesCheaperThan(price);
+                String userSession = request.getSession();
+                return handleBoxesCheaperThan(price, userSession);
             }
             case "Коробки от n рублей" -> {
                 Integer price = request.getQueryResult().getParameters().getCardinal();
-                return handleMoreExpensive(price);
+                String userSession = request.getSession();
+                return handleMoreExpensive(price, userSession);
             }
             case "Замени коробку" -> {
                 String from = request.getQueryResult().getParameters().getFrom();
@@ -166,29 +168,8 @@ public class WebhookService {
 
                 return handleAddBoxToCart(boxName, quantity, userSession);
             }
-            case "Коробки с продуктом - add" -> {
-                OutputContext context = request.getQueryResult().getOutputContexts().
-                        stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
-                String userSession = request.getSession();
-                // Название коробки берём из контекста
-                String boxName = context.getParameters().getBoxname();
-                // Кол-во коробок берём из простых параметров запроса
-                Integer quantity = request.getQueryResult().getParameters().getNumber();
-
-                return handleAddBoxToCart(boxName, quantity, userSession);
-            }
-            case "Коробки без продукта - add" -> {
-                OutputContext context = request.getQueryResult().getOutputContexts().
-                        stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
-                String userSession = request.getSession();
-                // Название коробки берём из контекста
-                String boxName = context.getParameters().getBoxname();
-                // Кол-во коробок берём из простых параметров запроса
-                Integer quantity = request.getQueryResult().getParameters().getNumber();
-
-                return handleAddBoxToCart(boxName, quantity, userSession);
-            }
-            case "Какие есть коробки - add" -> {
+            case "Коробки с продуктом - add", "Коробки без продукта - add", "Какие есть коробки - add",
+                    "Коробки до n рублей - add", "Коробки от n рублей - add" -> {
                 OutputContext context = request.getQueryResult().getOutputContexts().
                         stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
                 String userSession = request.getSession();
@@ -295,11 +276,6 @@ public class WebhookService {
         List<String> response = new ArrayList<>();
         List<OutputContext> outputContexts = new ArrayList<>();
 
-//        Parameters newParams = new Parameters(null, null, null,
-//                null, null, null, null, null, null,
-//                null, null, null, null, null, null, null, null, null);
-//        String contextName = userSession + "/contexts/one-item";
-//        outputContexts.add(new OutputContext(contextName, 1, newParams));
 
         if (!boxType.equals("")) {
             return resolveBoxesIntent(boxType, userSession);
@@ -368,12 +344,6 @@ public class WebhookService {
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
             outputContexts.add(new OutputContext(contextName, 1, newParams));
-        } else {
-//            Parameters newParams = new Parameters(null, null, null,
-//                    null, null, null, null, null, null,
-//                    null, null, null, null, null, null, null, null, null);
-//            String contextName = userSession + "/contexts/one-item";
-//            outputContexts.add(new OutputContext(contextName, 1, newParams));
         }
 
         return new Fulfillment(text, outputContexts);
@@ -408,12 +378,6 @@ public class WebhookService {
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
             outputContexts.add(new OutputContext(contextName, 1, newParams));
-        } else {
-//            Parameters newParams = new Parameters(null, null, null,
-//                    null, null, null, null, null, null,
-//                    null, null, null, null, null, null, null, null, null);
-//            String contextName = userSession + "/contexts/one-item";
-//            outputContexts.add(new OutputContext(contextName, 1, newParams));
         }
 
         return new Fulfillment(text, outputContexts);
@@ -505,10 +469,10 @@ public class WebhookService {
         return new Fulfillment(text, contexts);
     }
 
-    private Fulfillment handleBoxesCheaperThan(Integer price) {
+    private Fulfillment handleBoxesCheaperThan(Integer price, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-        List<OutputContext> contexts = new ArrayList<>();
+        List<OutputContext> outputContexts = new ArrayList<>();
 
         List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() < price)
                 .collect(Collectors.toList());
@@ -516,22 +480,34 @@ public class WebhookService {
         if (cheaper.size() == 0) {
             response.add("Не нашлось коробок дешевле " + price + " ₽:\n");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text, contexts);
+            return new Fulfillment(text, outputContexts);
         }
 
         StringBuilder summary = new StringBuilder("Коробки дешевле " + price + " ₽:\n");
         for (Box box : cheaper) {
             summary.append(" – ").append(box.getBoxName()).append("\n");
         }
+
         response.add(summary.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text, contexts);
+
+        if (cheaper.size() == 1) {
+            Box box = cheaper.get(0);
+            Parameters newParams = new Parameters(null, box.getBoxName(), null,
+                    null, null, null, null, null, null,
+                    null, null, null, null,
+                    null, null, null, null, null);
+            String contextName = userSession + "/contexts/one-item";
+            outputContexts.add(new OutputContext(contextName, 1, newParams));
+        }
+
+        return new Fulfillment(text, outputContexts);
     }
 
-    private Fulfillment handleMoreExpensive(Integer price) {
+    private Fulfillment handleMoreExpensive(Integer price, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
-        List<OutputContext> contexts = new ArrayList<>();
+        List<OutputContext> outputContexts = new ArrayList<>();
 
         List<Box> cheaper = allBoxes.stream().filter(box -> box.getPrice() > price)
                 .collect(Collectors.toList());
@@ -539,7 +515,7 @@ public class WebhookService {
         if (cheaper.size() == 0) {
             response.add("Не нашлось коробок дороже " + price + " ₽:\n");
             text.add(new Text(new Text2(response)));
-            return new Fulfillment(text, contexts);
+            return new Fulfillment(text, outputContexts);
         }
 
         StringBuilder summary = new StringBuilder("Коробки дороже " + price + " ₽:\n");
@@ -548,7 +524,18 @@ public class WebhookService {
         }
         response.add(summary.toString());
         text.add(new Text(new Text2(response)));
-        return new Fulfillment(text, contexts);
+
+        if (cheaper.size() == 1) {
+            Box box = cheaper.get(0);
+            Parameters newParams = new Parameters(null, box.getBoxName(), null,
+                    null, null, null, null, null, null,
+                    null, null, null, null,
+                    null, null, null, null, null);
+            String contextName = userSession + "/contexts/one-item";
+            outputContexts.add(new OutputContext(contextName, 1, newParams));
+        }
+
+        return new Fulfillment(text, outputContexts);
     }
 
     private Fulfillment handleChangeBox(String from, String to, String userSession) {
@@ -640,12 +627,8 @@ public class WebhookService {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
         List<OutputContext> outputContexts = new ArrayList<>();
-
-//        Parameters newParams = new Parameters(null, null, null,
-//                null, null, null, null, null, null,
-//                null, null, null, null, null, null, null, null, null);
         String contextName = userSession + "/contexts/one-item";
-//        outputContexts.add(new OutputContext(contextName, 1, newParams));
+
 
         if (boxType.equals("овощная")) {
             response.add("Овощные коробки:\n" +
