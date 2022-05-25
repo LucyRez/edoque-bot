@@ -18,6 +18,8 @@ public class Parameters {
     private String boxname;
     private String productname;
     private Integer number = 1;
+    private Integer additional;
+    private String more;
     private Integer cardinal;
     private String from;
     private String to;
