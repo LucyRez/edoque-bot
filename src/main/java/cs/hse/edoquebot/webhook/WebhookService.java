@@ -809,7 +809,7 @@ public class WebhookService {
                 params.getNumber(), params.getCardinal(), params.getFrom(), params.getTo(), "ok", "",
                 "", null, "", "", "", "", null, null, null);
         String contextName = userSession + "/contexts/orderinfo";
-        outputContexts.add(new OutputContext(contextName, 5, newParams));
+        outputContexts.add(new OutputContext(contextName, 1, newParams));
         return new Fulfillment(text, outputContexts);
     }
 
