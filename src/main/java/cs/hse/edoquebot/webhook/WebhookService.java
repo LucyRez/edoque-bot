@@ -67,6 +67,13 @@ public class WebhookService {
                 String userSession = request.getSession();
                 return handleRemoveBoxFromCart(boxName, userSession);
             }
+            case "Удали коробку - cancel" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts()
+                        .stream().filter(x -> x.getName().contains("-followup-8")).findFirst().get();
+                String boxName = context.getParameters().getBoxname();
+                String userSession = request.getSession();
+                return handleRevertRemoveBoxFromCart(boxName, userSession);
+            }
             case "Что в корзине" -> {
                 String userSession = request.getSession();
                 return handleCheckUserCart(userSession);
@@ -449,6 +456,35 @@ public class WebhookService {
         response.add("Убрал из корзины");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
+    }
+
+    private Fulfillment handleRevertRemoveBoxFromCart(String boxName, String userSession) {
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+        Box addedBox = allBoxes.stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
+        if (addedBox == null) {
+            response.add("Кажется такой коробки нет в ассортименте. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null) {
+            userCart = new Cart(userSession);
+            allUsersCarts.add(userCart);
+        }
+
+        userCart.addToCart(addedBox);
+
+        response.add("Вернул в корзину эту коробку");
+
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text, contexts);
+
     }
 
     private Fulfillment handleCheckUserCart(String userSession) {
