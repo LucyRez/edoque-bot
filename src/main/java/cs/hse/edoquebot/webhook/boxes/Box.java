@@ -25,7 +25,7 @@ public class Box {
         String descriptionSummary = "\"" + boxName + "\" \n" + description + "\n";
         StringBuilder content = new StringBuilder(" Состав коробки: \n");
 
-        if(!surprise && products.size() != 0){
+        if(!surprise && !boxName.equals("Не болей") && !boxName.equals("Весенняя коробка")){
             for (Product product : products) {
                 String productDescription = "  – " +
                         product.getName() +
