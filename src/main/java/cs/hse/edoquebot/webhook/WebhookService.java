@@ -219,6 +219,16 @@ public class WebhookService {
 
                 return handleAddBoxToCart(boxName, quantity, userSession);
             }
+            case "Коробки с продуктом - description", "Коробки без продукта - description", "Какие есть коробки - description",
+                    "Коробки до n рублей - description", "Коробки от n рублей - description" -> {
+                OutputContext context = request.getQueryResult().getOutputContexts().
+                        stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
+                
+                // Название коробки берём из контекста
+                String boxName = context.getParameters().getBoxname();
+
+                return handleAboutBox(boxName);
+            }
 
 
         }
