@@ -268,13 +268,16 @@ public class WebhookService {
             userCart.addToCart(currentBox);
         }
 
+        String boxWord = changeWordForm(quantity);
+
+
         Parameters newParams = new Parameters(null, boxName, null,
                 quantity, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
         String contextName = userSession + "/contexts/added";
         contexts.add(new OutputContext(contextName, 1, newParams));
 
-        response.add("Понял. Добавил в итоге " + quantity + " коробок");
+        response.add("Понял. Добавил в итоге " + quantity + boxWord);
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
     }
