@@ -223,7 +223,7 @@ public class WebhookService {
                     "Коробки до n рублей - description", "Коробки от n рублей - description" -> {
                 OutputContext context = request.getQueryResult().getOutputContexts().
                         stream().filter(x -> x.getName().contains("one-item")).findFirst().get();
-                
+
                 // Название коробки берём из контекста
                 String boxName = context.getParameters().getBoxname();
 
@@ -301,7 +301,7 @@ public class WebhookService {
                 .findFirst().orElse(null);
 
         if (userCart == null || userCart.getBoxes().size() == 0) {
-            response.add("Ваш заказ оформлен  Ожидайте курьера  Будем рады вам снова!");
+            response.add("Ваш заказ оформлен, ожидайте курьера.\nБудем рады вам снова!");
             text.add(new Text(new Text2(response)));
             return new Fulfillment(text, contexts);
         }
@@ -309,7 +309,7 @@ public class WebhookService {
         allUsersCarts.remove(userCart);
         allUsersCarts.add(new Cart(userSession));
 
-        response.add("Ваш заказ оформлен  Ожидайте курьера  Будем рады вам снова!");
+        response.add("Ваш заказ оформлен, ожидайте курьера.\nБудем рады вам снова!");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
     }
