@@ -67,14 +67,14 @@ public class Order {
 
     private String call() {
         if (shouldCall) {
-            return "Мы вам перезвоним для подтверждения заказа. \n";
+            return "Мы вам перезвоним для подтверждения заказа. Вы можете отказаться от звонка \n";
         }
         return "Звонить не будем. \n";
     }
 
     private String tipsString() {
         if (tips == null) {
-            return "Вы можете оставить чаевые курьеру. \n\n";
+            return "Если хотите оставить чаевые курьеру, то напишите об этом до подтверждения заказа.\n\n";
         }
         return "\n";
     }
@@ -83,7 +83,7 @@ public class Order {
         if (comment != null) {
             return "Комментарий: " + comment + ". \n";
         }
-        return "Можете добавить комментарий к заказу. \n";
+        return "Вы также можете добавить комментарий к заказу. \n";
     }
 
     private String parseDate(){
