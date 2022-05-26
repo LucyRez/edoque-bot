@@ -541,21 +541,7 @@ public class WebhookService {
         if (quantity == 1) {
             response.add("Добавил в корзину");
         } else {
-
-            String boxWord;
-            int n = Math.abs(quantity);
-
-            n %= 100;
-            if (n >= 5 && n <= 20) {
-                boxWord = " коробок ";
-            }
-            n %= 10;
-            if (n >= 2 && n <= 4) {
-               boxWord =  " коробки ";
-            }
-
-            boxWord = " коробок ";
-
+            String boxWord = changeWordForm(quantity);
             response.add("Добавил " + quantity + boxWord + "в корзину");
         }
 
@@ -996,6 +982,21 @@ public class WebhookService {
 
         );
 
+    }
+
+    private String changeWordForm(int quantity){
+        int n = Math.abs(quantity);
+
+        n %= 100;
+        if (n >= 5 && n <= 20) {
+            return " коробок ";
+        }
+        n %= 10;
+        if (n >= 2 && n <= 4) {
+            return  " коробки ";
+        }
+
+        return " коробок ";
     }
 
 
