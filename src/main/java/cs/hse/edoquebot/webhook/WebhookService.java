@@ -295,7 +295,7 @@ public class WebhookService {
         String boxWord = changeWordForm(quantity);
 
 
-        Parameters newParams = new Parameters(null, boxName, null,null,
+        Parameters newParams = new Parameters(null, boxName, new ArrayList<>(),null,
                 quantity, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
         String contextName = userSession + "/contexts/added";
@@ -378,7 +378,7 @@ public class WebhookService {
         text.add(new Text(new Text2(response)));
 
         List<OutputContext> outputContexts = new ArrayList<>();
-        Parameters newParams = new Parameters(null, null, null,null,
+        Parameters newParams = new Parameters(null, null, new ArrayList<>(),null,
                 null, null, null, null, null, null, "ok", address,
                 deliveryDate, name, deliveryZone, email, phone, deliveryTimeInterval, shouldCall, comment, tips);
         String contextName = userSession + "/contexts/orderinfofilled";
@@ -457,7 +457,7 @@ public class WebhookService {
 
         if (withoutProduct.size() == 1) {
             Box box = withoutProduct.get(0);
-            Parameters newParams = new Parameters(null, box.getBoxName(), null,null,
+            Parameters newParams = new Parameters(null, box.getBoxName(), new ArrayList<>(),null,
                     null, null, null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
@@ -491,7 +491,7 @@ public class WebhookService {
 
         if (withProduct.size() == 1) {
             Box box = withProduct.get(0);
-            Parameters newParams = new Parameters(null, box.getBoxName(), null,null,
+            Parameters newParams = new Parameters(null, box.getBoxName(), new ArrayList<>(),null,
                     null, null, null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null, null);
             String contextName = userSession + "/contexts/one-item";
@@ -683,13 +683,13 @@ public class WebhookService {
             response.add("Добавил " + quantity + boxWord + "в корзину");
         }
 
-        Parameters addedParams = new Parameters(null, boxName, null,null,
+        Parameters addedParams = new Parameters(null, boxName, new ArrayList<>(),null,
                 quantity, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
         String addedContextName = userSession + "/contexts/added";
         contexts.add(new OutputContext(addedContextName, 1, addedParams));
 
-        Parameters additionalParams = new Parameters(null, boxName, null,null,
+        Parameters additionalParams = new Parameters(null, boxName, new ArrayList<>(),null,
                 quantity, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
         String additionalContextName = userSession + "/contexts/additional";
@@ -799,7 +799,7 @@ public class WebhookService {
 
         if (cheaper.size() == 1) {
             Box box = cheaper.get(0);
-            Parameters newParams = new Parameters(null, box.getBoxName(), null,null,
+            Parameters newParams = new Parameters(null, box.getBoxName(), new ArrayList<>(),null,
                     null, null, null, null, null, null, null, null,
                     null, null, null, null,
                     null, null, null, null, null);
@@ -833,7 +833,7 @@ public class WebhookService {
 
         if (cheaper.size() == 1) {
             Box box = cheaper.get(0);
-            Parameters newParams = new Parameters(null, box.getBoxName(), null,null,
+            Parameters newParams = new Parameters(null, box.getBoxName(), new ArrayList<>(),null,
                     null, null, null, null, null, null, null, null,
                     null, null, null, null,
                     null, null, null, null, null);
@@ -958,7 +958,7 @@ public class WebhookService {
         response.add(userCart.toString() + "\n" + "Можем перейти к оформлению?");
         text.add(new Text(new Text2(response)));
         List<OutputContext> outputContexts = new ArrayList<>();
-        Parameters newParams = new Parameters(params.getBoxtype(), params.getBoxname(), null,params.getProductname(),
+        Parameters newParams = new Parameters(params.getBoxtype(), params.getBoxname(), new ArrayList<>(),params.getProductname(),
                 params.getNumber(), null, null, params.getCardinal(), params.getFrom(), params.getTo(), "ok", "",
                 "", null, "", "", "", "", null, null, null);
         String contextName = userSession + "/contexts/orderinfo";
@@ -993,7 +993,7 @@ public class WebhookService {
                 "  – Коробка недели,  1.5 кг (1200 ₽)");
         text.add(new Text(new Text2(response)));
 
-        Parameters newParams = new Parameters(null, "Коробка недели", null,null,
+        Parameters newParams = new Parameters(null, "Коробка недели", new ArrayList<>(),null,
                 null, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
         outputContexts.add(new OutputContext(contextName, 1, newParams));
