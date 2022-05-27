@@ -7,8 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-
 
 @Getter
 @Setter
@@ -18,10 +16,8 @@ public class Parameters {
 
     private String boxtype;
     private String boxname;
-    private ArrayList<String> boxes;
     private String productname;
     private Integer number = 1;
-    private ArrayList<ComplexItems> complexItems;
     private Integer additional;
     private String more;
     private Integer cardinal;
