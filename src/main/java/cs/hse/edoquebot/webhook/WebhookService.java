@@ -70,8 +70,14 @@ public class WebhookService {
             }
             case "Удали коробку" -> {
                 String boxName = request.getQueryResult().getParameters().getBoxname();
+                Integer quantity = request.getQueryResult().getParameters().getNumber();
                 String userSession = request.getSession();
-                return handleRemoveBoxFromCart(boxName, userSession);
+                return handleRemoveBoxFromCart(boxName,quantity, userSession);
+            }
+            case "Удали все коробки одного типа" -> {
+                String boxName = request.getQueryResult().getParameters().getBoxname();
+                String userSession = request.getSession();
+                return handleRemoveBoxAllFromCart(boxName, userSession);
             }
             case "Удали коробку - cancel" -> {
                 OutputContext context = request.getQueryResult().getOutputContexts()
@@ -700,7 +706,7 @@ public class WebhookService {
 
     }
 
-    private Fulfillment handleRemoveBoxFromCart(String boxName, String userSession) {
+    private Fulfillment handleRemoveBoxAllFromCart(String boxName, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
         List<OutputContext> contexts = new ArrayList<>();
@@ -722,7 +728,58 @@ public class WebhookService {
             return new Fulfillment(text, contexts);
         }
 
+        while(removedBox!= null) {
+
+            userCart.removeFromCart(removedBox);
+
+            removedBox = userCart.getBoxes().
+                    stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
+        }
+
+        response.add("Убрал из корзины");
+        text.add(new Text(new Text2(response)));
+        return new Fulfillment(text, contexts);
+    }
+
+    private Fulfillment handleRemoveBoxFromCart(String boxName, Integer quantity, String userSession) {
+        List<Text> text = new ArrayList<>();
+        List<String> response = new ArrayList<>();
+        List<OutputContext> contexts = new ArrayList<>();
+
+        Cart userCart = allUsersCarts.stream().filter(cart -> cart.getUserSession().equals(userSession))
+                .findFirst().orElse(null);
+
+        if (userCart == null || userCart.getBoxes().size() == 0) {
+            response.add("В вашей корзине сейчас пусто. Нечего убирать");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
+
+        Box removedBox = userCart.getBoxes().
+                stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
+        if (removedBox == null) {
+            response.add("Кажется такой коробки нет в вашей корзине. Можете сказать по другому?");
+            text.add(new Text(new Text2(response)));
+            return new Fulfillment(text, contexts);
+        }
         userCart.removeFromCart(removedBox);
+
+        if (quantity == null) {
+            quantity = 0;
+        }
+
+        for (int i = 0; i < quantity; i++) {
+            Box removedBox2 = userCart.getBoxes().
+                    stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
+            if (removedBox2 == null) {
+                response.add("Убрал из корзины");
+                text.add(new Text(new Text2(response)));
+                return new Fulfillment(text, contexts);
+            }
+            userCart.removeFromCart(removedBox2);
+        }
+
+
         response.add("Убрал из корзины");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
