@@ -83,8 +83,9 @@ public class WebhookService {
                 OutputContext context = request.getQueryResult().getOutputContexts()
                         .stream().filter(x -> x.getName().contains("-followup-8")).findFirst().get();
                 String boxName = context.getParameters().getBoxname();
+                Integer quantity = context.getParameters().getNumber();
                 String userSession = request.getSession();
-                return handleRevertRemoveBoxFromCart(boxName, userSession);
+                return handleRevertRemoveBoxFromCart(boxName, quantity, userSession);
             }
             case "Что в корзине" -> {
                 String userSession = request.getSession();
@@ -728,13 +729,22 @@ public class WebhookService {
             return new Fulfillment(text, contexts);
         }
 
-        while(removedBox!= null) {
+        int i = 0;
 
+        while(removedBox!= null) {
+            i++;
             userCart.removeFromCart(removedBox);
 
             removedBox = userCart.getBoxes().
                     stream().filter(box -> box.getBoxName().equals(boxName)).findFirst().orElse(null);
         }
+
+        Parameters newParams = new Parameters(null, boxName, new ArrayList<>(),null,
+                i, null, null, null, null, null, null, null,
+                null, null, null, null,
+                null, null, null, null, null);
+        String contextName = userSession + "/contexts/-followup-8";
+        contexts.add(new OutputContext(contextName, 1, newParams));
 
         response.add("Убрал из корзины");
         text.add(new Text(new Text2(response)));
@@ -785,7 +795,7 @@ public class WebhookService {
         return new Fulfillment(text, contexts);
     }
 
-    private Fulfillment handleRevertRemoveBoxFromCart(String boxName, String userSession) {
+    private Fulfillment handleRevertRemoveBoxFromCart(String boxName, Integer quantity, String userSession) {
         List<Text> text = new ArrayList<>();
         List<String> response = new ArrayList<>();
         List<OutputContext> contexts = new ArrayList<>();
@@ -805,7 +815,12 @@ public class WebhookService {
             allUsersCarts.add(userCart);
         }
 
-        userCart.addToCart(addedBox);
+        if (quantity == null) {
+            quantity = 1;
+        }
+        for (int i = 0; i < quantity; i++) {
+            userCart.addToCart(addedBox);
+        }
 
         response.add("Вернул в корзину эту коробку");
 
