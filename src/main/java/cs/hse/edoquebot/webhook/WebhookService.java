@@ -1008,7 +1008,7 @@ public class WebhookService {
         allUsersCarts.remove(userCart);
         allUsersCarts.add(new Cart(userSession));
 
-        response.add("Очистил корзину. Может снова добавим туда что-нибудь?");
+        response.add("Очистил корзину");
         text.add(new Text(new Text2(response)));
         return new Fulfillment(text, contexts);
     }
