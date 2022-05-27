@@ -775,8 +775,9 @@ public class WebhookService {
         userCart.removeFromCart(removedBox);
 
         if (quantity == null) {
-            quantity = 0;
+            quantity = 1;
         }
+        quantity--;
 
         for (int i = 0; i < quantity; i++) {
             Box removedBox2 = userCart.getBoxes().
